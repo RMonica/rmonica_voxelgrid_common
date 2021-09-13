@@ -1,3 +1,33 @@
+/*
+ * Copyright (c) 2021, Riccardo Monica
+ *   RIMLab, Department of Engineering and Architecture, University of Parma, Italy
+ *   http://www.rimlab.ce.unipr.it/
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions
+ * and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other materials provided with
+ * the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #ifndef VOXELGRID_rmonica_voxelgrid_common_H
 #define VOXELGRID_rmonica_voxelgrid_common_H
 
@@ -20,10 +50,12 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
+#ifdef HAS_OCTOMAP
 namespace octomap
 {
   class OcTree;
 }
+#endif
 
 namespace rmonica_voxelgrid_common
 {
@@ -46,9 +78,11 @@ class Voxelgrid
 
   // LOAD/SAVE/CONVERSIONS
   static Ptr Load2DOpenCV(const std::string & filename);
-  static Ptr Load3DOctomap(const std::string & filename);
-  static Ptr Load3DOctomapWithISize(const std::string & filename,
-                                    const Eigen::Vector3i & isize);
+  #ifdef HAS_OCTOMAP
+    static Ptr Load3DOctomap(const std::string & filename);
+    static Ptr Load3DOctomapWithISize(const std::string & filename,
+                                      const Eigen::Vector3i & isize);
+  #endif //HAS_OCTOMAP
   bool Save2D3D(const std::string & filename_prefix, const bool is_3d) const;
   bool Save2D3DR(const std::string & filename_prefix, const bool is_3d, const float resolution) const;
 
@@ -57,12 +91,14 @@ class Voxelgrid
   static Ptr FromOpenCVImage2DFloat(const cv::Mat &image);
   bool SaveOpenCVImage2D(const std::string & filename) const;
 
-  std::shared_ptr<octomap::OcTree> ToOctomapOctree() const;
-  std::shared_ptr<octomap::OcTree> ToOctomapOctree(const float resolution) const;
-  static Ptr FromOctomapOctree(octomap::OcTree & octree);
-  static Ptr FromOctomapOctree(octomap::OcTree & octree, const Eigen::Vector3i & isize);
-  bool SaveOctomapOctree(const std::string & filename) const;
-  bool SaveOctomapOctree(const std::string & filename, const float resolution) const;
+  #ifdef HAS_OCTOMAP
+    std::shared_ptr<octomap::OcTree> ToOctomapOctree() const;
+    std::shared_ptr<octomap::OcTree> ToOctomapOctree(const float resolution) const;
+    static Ptr FromOctomapOctree(octomap::OcTree & octree);
+    static Ptr FromOctomapOctree(octomap::OcTree & octree, const Eigen::Vector3i & isize);
+    bool SaveOctomapOctree(const std::string & filename) const;
+    bool SaveOctomapOctree(const std::string & filename, const float resolution) const;
+  #endif // HAS_OCTOMAP
 
   FloatVector ToFloatVector() const;
   static Ptr FromFloatVector(const FloatVector & data, const uint64 width, const uint64 height, const uint64 depth);
@@ -206,7 +242,9 @@ class Voxelgrid4
     { return Eigen::Vector3f(at(0)[coord], at(1)[coord], at(2)[coord]); }
 
   bool Save2D3D(const std::string & filename_prefix, const bool is_3d) const;
-  bool SaveOctomapOctree(const std::string & filename_prefix) const;
+  #ifdef HAS_OCTOMAP
+    bool SaveOctomapOctree(const std::string & filename_prefix) const;
+  #endif // HAS_OCTOMAP
   bool ToFile(const std::string & filename_prefix) const;
   bool ToFileBinary(const std::string & filename_prefix) const;
 

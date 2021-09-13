@@ -10,7 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(octomap REQUIRED)
+find_package(octomap)
+
+if (${octomap_FOUND})
+  add_definitions(-DHAS_OCTOMAP)
+else()
+  message(WARNING "Octomap not found, octomap will be disabled.")
+endif()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -43,6 +49,8 @@ include_directories(
   ${EIGEN3_INCLUDE_DIRS}
   ${OCTOMAP_INCLUDE_DIRS}
 )
+
+link_directories(${OCTOMAP_LIBRARY_DIRS})
 
 ## Declare a C++ library
 add_library(rmonica_voxelgrid_common

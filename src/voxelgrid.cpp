@@ -1,9 +1,42 @@
+/*
+ * Copyright (c) 2021, Riccardo Monica
+ *   RIMLab, Department of Engineering and Architecture, University of Parma, Italy
+ *   http://www.rimlab.ce.unipr.it/
+ *
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted
+ * provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions
+ * and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of
+ * conditions and the following disclaimer in the documentation and/or other materials provided with
+ * the distribution.
+ *
+ * 3. Neither the name of the copyright holder nor the names of its contributors may be used to
+ * endorse or promote products derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <rmonica_voxelgrid_common/voxelgrid.h>
 
-#include <octomap/octomap.h>
-#include <octomap/OcTree.h>
+#ifdef HAS_OCTOMAP
+  #include <octomap/octomap.h>
+  #include <octomap/OcTree.h>
+#endif
 
 #include <sstream>
+#include <fstream>
 
 #define MAGIC_TERNARY_BINARY "VXGT"
 
@@ -96,6 +129,7 @@ Voxelgrid::Ptr Voxelgrid::FromFloatVector(const FloatVector & data, const uint64
   return result;
 }
 
+#ifdef HAS_OCTOMAP
 std::shared_ptr<octomap::OcTree> Voxelgrid::ToOctomapOctree(const float resolution) const
 {
   std::shared_ptr<octomap::OcTree> result(new octomap::OcTree(resolution));
@@ -250,6 +284,7 @@ Voxelgrid::Ptr Voxelgrid::Load3DOctomapWithISize(const std::string & filename,
 
   return FromOctomapOctree(octree, isize);
 }
+#endif // HAS_OCTOMAP
 
 Voxelgrid::Ptr Voxelgrid::HalveSize(const Eigen::Vector3i & iterations) const
 {
@@ -331,8 +366,11 @@ bool Voxelgrid::Save2D3D(const std::string & filename_prefix, const bool is_3d) 
     return SaveOpenCVImage2D(filename_prefix + ".png");
   else
   {
-    return SaveOctomapOctree(filename_prefix + ".bt") &&
-           ToFileBinary(filename_prefix + ".binvoxelgrid");
+    return
+      #ifdef HAS_OCTOMAP
+        SaveOctomapOctree(filename_prefix + ".bt") &&
+      #endif
+        ToFileBinary(filename_prefix + ".binvoxelgrid");
   }
 }
 
@@ -342,7 +380,10 @@ bool Voxelgrid::Save2D3DR(const std::string & filename_prefix, const bool is_3d,
     return SaveOpenCVImage2D(filename_prefix + ".png");
   else
   {
-    return SaveOctomapOctree(filename_prefix + ".bt", resolution) &&
+    return
+        #ifdef HAS_OCTOMAP
+          SaveOctomapOctree(filename_prefix + ".bt", resolution) &&
+        #endif
            ToFileBinary(filename_prefix + ".binvoxelgrid");
   }
 }
@@ -1133,6 +1174,7 @@ bool Voxelgrid4::SaveOpenCVImage2D(const std::string & filename) const
   return cv::imwrite(filename, image);
 }
 
+#ifdef HAS_OCTOMAP
 bool Voxelgrid4::SaveOctomapOctree(const std::string & filename_prefix) const
 {
   for (uint64 i = 0; i < 4; i++)
@@ -1140,6 +1182,7 @@ bool Voxelgrid4::SaveOctomapOctree(const std::string & filename_prefix) const
       return false;
   return true;
 }
+#endif
 
 bool Voxelgrid4::ToFile(const std::string & filename_prefix) const
 {
@@ -1268,7 +1311,10 @@ bool Voxelgrid4::Save2D3D(const std::string & filename_prefix, const bool is_3d)
   if (!is_3d)
     return SaveOpenCVImage2D(filename_prefix + ".png");
   else
-    return SaveOctomapOctree(filename_prefix) &&
+    return
+      #ifdef HAS_OCTOMAP
+        SaveOctomapOctree(filename_prefix) &&
+      #endif
            ToFileBinary(filename_prefix);
 }
 

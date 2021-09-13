@@ -13,4 +13,4 @@ Download the repository into your workspace and compile it with `catkin build` o
 - ROS 1
 - Eigen3
 - OpenCV
-- OctoMap
+- OctoMap (optional)
